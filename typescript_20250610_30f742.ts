@@ -1,6 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
 
-// ===== Код с ошибками =====
 class BrokenPage {
   private page: Page;
 
@@ -8,48 +7,42 @@ class BrokenPage {
     this.page = page;
   }
 
-  // Ошибка 1: Селектор неверный (должен быть '.btn')
   async clickButton() {
-    await this.page.click('button'); // Кликает первый button на странице, а не конкретный
+    await this.page.click('button');
   }
 
-  // Ошибка 2: Нет await перед expect
-  async checkTitle(title: string) {
-    expect(await this.page.title()).toBe(title); // Должен быть await expect
+  async waitForElement() {
+    await this.page.waitForTimeout(3000);
+    await this.page.click('.start');
   }
 
-  // Ошибка 3: Не обрабатывается ошибка сети
-  async fetchData(url: string) {
-    const response = await this.page.goto(url);
-    return response!.json(); // Упадет, если response === null
+    async checkHeadingText(expected: string) {
+    const heading = this.page.locator('h1');
+    expect(heading.textContent()).toBe(expected);
   }
 }
 
-// ===== Тест =====
 test.describe('Broken Tests Review', () => {
   let page: Page;
   let brokenPage: BrokenPage;
 
   test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
-    brokenPage = new BrokenPage(page);
+    page = await browser.newPage();// почему не импортировать  пейджд
+    brokenPage = new BrokenPage(page); 
     await page.goto('https://example.com');
   });
 
-  // Тест 1: Проверка заголовка (упадет)
   test('Check page title', async () => {
-    await brokenPage.checkTitle('Example Domain'); // Должен быть await
+    await brokenPage.checkTitle('Example Domain');
   });
 
-  // Тест 2: Клик по кнопке (упадет, если кнопок несколько)
   test('Click button', async () => {
     await brokenPage.clickButton();
-    expect(await page.url()).toContain('clicked'); // Пример проверки
+    expect(await page.url()).toContain('clicked'); //не нравится проверка
   });
 
-  // Тест 3: Запрос данных (упадет при network error)
-  test('Fetch data', async () => {
-    const data = await brokenPage.fetchData('https://api.example.com/data');
-    expect(data).toHaveProperty('success', true);
+    test('Load data from API', async () => {
+    const result = await brokenPage.loadData('https://api.example.com/data');
+    expect(result).toBe('ok');
   });
 });
