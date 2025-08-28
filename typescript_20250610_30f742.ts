@@ -27,7 +27,7 @@ test.describe('Broken Tests Review', () => {
   let brokenPage: BrokenPage;
 
   test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();// почему не импортировать  пейджд
+    page = await browser.newPage();
     brokenPage = new BrokenPage(page); 
     await page.goto('https://example.com');
   });
@@ -38,7 +38,7 @@ test.describe('Broken Tests Review', () => {
 
   test('Click button', async () => {
     await brokenPage.clickButton();
-    expect(await page.url()).toContain('clicked'); //не нравится проверка
+    expect(await page.url()).toContain('clicked');
   });
 
     test('Load data from API', async () => {
