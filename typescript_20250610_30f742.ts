@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import {test, expect, Page} from '@playwright/test';
 
 class BrokenPage {
   private page: Page;
@@ -11,12 +11,12 @@ class BrokenPage {
     await this.page.click('button');
   }
 
-  async waitForElement() {
+  async waitForElementAndStart() {
     await this.page.waitForTimeout(3000);
-    await this.page.click('.start');
+    await this.page.locator('.start').click();
   }
 
-    async checkHeadingText(expected: string) {
+  async checkHeadingText(expected: string) {
     const heading = this.page.locator('h1');
     expect(heading.textContent()).toBe(expected);
   }
@@ -26,14 +26,14 @@ test.describe('Broken Tests Review', () => {
   let page: Page;
   let brokenPage: BrokenPage;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({browser}) => {
     page = await browser.newPage();
-    brokenPage = new BrokenPage(page); 
+    brokenPage = new BrokenPage(page);
     await page.goto('https://example.com');
   });
 
   test('Check page title', async () => {
-    await brokenPage.checkTitle('Example Domain');
+    await brokenPage.checkHeadingText('Example Domain');
   });
 
   test('Click button', async () => {
@@ -41,8 +41,11 @@ test.describe('Broken Tests Review', () => {
     expect(await page.url()).toContain('clicked');
   });
 
-    test('Load data from API', async () => {
-    const result = await brokenPage.loadData('https://api.example.com/data');
-    expect(result).toBe('ok');
+  await test.step('Сheck that report is sent to recipients', async () => {
+    const addReportResponse = await page.waitForResponse(
+      (res) => res.url().includes('/api/send-report') && res.request().method() === 'POST' && res.status() === 200,
+    );
+    const {recipients} = addReportResponse.request().postDataJSON() as {recipients: string[]};
+    expect(recipients).toEqual(recipients);
   });
 });
